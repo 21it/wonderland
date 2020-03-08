@@ -14,11 +14,21 @@ defmodule Wonderland.TypeClass.Wonder do
     end
   end
 
-  defmacro unlift(x) do
-    quote location: :keep do
-      x = unquote(x)
-      {:module, mod} = :erlang.fun_info(x, :module)
-      mod.wonder_unlift(x)
+  def unlift(x) when is_function(x) do
+    {:module, mod} = :erlang.fun_info(x, :module)
+
+    try do
+      x
+      |> mod.wonder_unlift()
+      |> unlift()
+    rescue
+      e in UndefinedFunctionError ->
+        case e do
+          %UndefinedFunctionError{function: :wonder_unlift, arity: 1} -> x
+          _ -> reraise(e, __STACKTRACE__)
+        end
     end
   end
+
+  def unlift(x), do: x
 end
