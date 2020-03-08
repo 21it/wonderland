@@ -1,18 +1,13 @@
 defmodule Wonderland do
   @moduledoc """
-  Documentation for `Wonderland`.
+  Elixir functional programming foundation
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Wonderland.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  defmacro __using__(opts) do
+    quote location: :keep do
+      use Wonderland.Data
+      use Wonderland.TypeClass, unquote(opts)
+      :ok
+    end
   end
 end
