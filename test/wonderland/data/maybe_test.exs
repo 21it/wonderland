@@ -97,4 +97,17 @@ defmodule Wonderland.Data.MaybeTest do
     assert 1 == unlift(j)
     assert nil == unlift(n)
   end
+
+  test "unlift reraise" do
+    defmodule FakeWonder do
+      def foo, do: nil
+      def wonder_unlift(_), do: :erlang.apply(__MODULE__, :bar, [])
+    end
+
+    assert_raise UndefinedFunctionError,
+                 "function Wonderland.Data.MaybeTest.FakeWonder.bar/0 is undefined or private",
+                 fn ->
+                   (&FakeWonder.foo/0) |> lift(Maybe) |> unlift()
+                 end
+  end
 end

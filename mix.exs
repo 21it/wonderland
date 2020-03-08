@@ -8,6 +8,7 @@ defmodule Wonderland.MixProject do
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
       # excoveralls
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [

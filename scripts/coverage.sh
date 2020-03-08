@@ -1,6 +1,6 @@
 #!/bin/bash
 
 mix compile
-mix coveralls.html
+mix coveralls.html || open ./cover/excoveralls.html
 echo "Coverage report has been generated!"
-open ./cover/excoveralls.html
+
