@@ -15,21 +15,7 @@ defmodule Wonderland.Data.Maybe do
 
   defmacrop nothingp, do: :nothingp
 
-  @get_error "Can't get! from #{inspect(__MODULE__)}.nothing"
-
   defcalculus state, export_return: false, generate_opaque: false do
-    :get ->
-      case state do
-        justp(x) -> calculus(state: state, return: x)
-        nothingp() -> calculus(state: state, return: nil)
-      end
-
-    :get! ->
-      case state do
-        justp(x) -> calculus(state: state, return: x)
-        nothingp() -> raise(@get_error)
-      end
-
     method when method in [:is_just?, :is_nothing?] ->
       case state do
         justp(_) -> calculus(state: state, return: method == :is_just?)
@@ -52,12 +38,18 @@ defmodule Wonderland.Data.Maybe do
       case is_just?(mf) do
         true ->
           case state do
-            justp(x) -> calculus(state: justp(get!(mf).(x)), return: :ok)
+            justp(x) -> calculus(state: justp(unlift(mf).(x)), return: :ok)
             nothingp() -> calculus(state: state, return: :ok)
           end
 
         false ->
           calculus(state: nothingp(), return: :ok)
+      end
+
+    :wonder_unlift ->
+      case state do
+        justp(x) -> calculus(state: state, return: x)
+        nothingp() -> calculus(state: state, return: nil)
       end
   end
 
@@ -91,40 +83,6 @@ defmodule Wonderland.Data.Maybe do
   """
   @spec nothing :: t(a)
   def nothing, do: nothingp() |> construct()
-
-  @doc """
-  If argument is `just(a)` then returns `a`, otherwise returns `nil`
-
-  ## Examples
-
-  ```
-  iex> j = Maybe.just(1)
-  iex> n = Maybe.nothing()
-  iex> Maybe.get(j)
-  1
-  iex> Maybe.get(n)
-  nil
-  ```
-  """
-  @spec get(t(a)) :: a | nil
-  def get(it), do: it |> eval(:get) |> return()
-
-  @doc """
-  If argument is `just(a)` then returns `a`, otherwise raise exception
-
-  ## Examples
-
-  ```
-  iex> j = Maybe.just(1)
-  iex> n = Maybe.nothing()
-  iex> Maybe.get!(j)
-  1
-  iex> Maybe.get!(n)
-  ** (RuntimeError) Can't get! from Wonderland.Data.Maybe.nothing
-  ```
-  """
-  @spec get!(t(a)) :: a | no_return
-  def get!(it), do: it |> eval(:get!) |> return()
 
   @doc """
   If argument is `just(a)` then returns `true`
@@ -175,4 +133,11 @@ defmodule Wonderland.Data.Maybe do
   @behaviour Applicative
   @impl true
   def applicative_ap(mf, it), do: it |> eval({:applicative_ap, mf})
+
+  @behaviour Wonder
+  @impl true
+  def wonder_lift(x) when x in [nil, :undefined], do: nothing()
+  def wonder_lift(x), do: just(x)
+  @impl true
+  def wonder_unlift(x), do: x |> eval(:wonder_unlift) |> return()
 end

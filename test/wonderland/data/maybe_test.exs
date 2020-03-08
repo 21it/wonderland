@@ -20,24 +20,9 @@ defmodule Wonderland.Data.MaybeTest do
     refute Maybe.is_nothing?(j)
   end
 
-  test "get", %{just: j, nothing: n} do
-    assert 1 == Maybe.get(j)
-    assert nil == Maybe.get(n)
-  end
-
-  test "get!", %{just: j, nothing: n} do
-    assert 1 == Maybe.get!(j)
-
-    assert_raise RuntimeError,
-                 "Can't get! from Wonderland.Data.Maybe.nothing",
-                 fn ->
-                   Maybe.get!(n)
-                 end
-  end
-
   test "fmap just", %{just: j} do
     x = (&(&1 * 3)) <~ j
-    assert 3 == Maybe.get!(x)
+    assert 3 == unlift(x)
   end
 
   test "fmap nothing", %{nothing: n} do
@@ -50,7 +35,7 @@ defmodule Wonderland.Data.MaybeTest do
 
   test "flip fmap just", %{just: j} do
     x = j ~> (&(&1 * 3))
-    assert 3 == Maybe.get!(x)
+    assert 3 == unlift(x)
   end
 
   test "flip fmap nothing", %{nothing: n} do
@@ -63,7 +48,7 @@ defmodule Wonderland.Data.MaybeTest do
 
   test "bind just", %{just: j} do
     x0 = j >>> (&Maybe.just(&1 * 3))
-    assert 3 == Maybe.get!(x0)
+    assert 3 == unlift(x0)
 
     x1 = j >>> fn _ -> Maybe.nothing() end
     assert Maybe.is_nothing?(x1)
@@ -87,7 +72,7 @@ defmodule Wonderland.Data.MaybeTest do
 
   test "ap just", %{just: j} do
     x = (&Kernel.+/2) <~ j <<~ j
-    assert 2 == Maybe.get!(x)
+    assert 2 == unlift(x)
   end
 
   test "ap just + nothing", %{just: j, nothing: n} do
@@ -99,5 +84,17 @@ defmodule Wonderland.Data.MaybeTest do
 
     x2 = (&Kernel.+/2) <~ n <<~ n
     assert Maybe.is_nothing?(x2)
+  end
+
+  test "lift" do
+    j = lift(1, Maybe)
+    n = lift(nil, Maybe)
+    assert Maybe.is_just?(j)
+    assert Maybe.is_nothing?(n)
+  end
+
+  test "unlift", %{just: j, nothing: n} do
+    assert 1 == unlift(j)
+    assert nil == unlift(n)
   end
 end
