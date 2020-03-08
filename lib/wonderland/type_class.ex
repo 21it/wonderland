@@ -1,10 +1,11 @@
 defmodule Wonderland.TypeClass do
   defmacro __using__(opts) do
     quote location: :keep do
+      use Wonderland.TypeClass.Wonder, unquote(opts)
       use Wonderland.TypeClass.Functor, unquote(opts)
       use Wonderland.TypeClass.Monad, unquote(opts)
       use Wonderland.TypeClass.Applicative, unquote(opts)
-      use Wonderland.TypeClass.Wonder, unquote(opts)
+      use Wonderland.TypeClass.Bifunctor, unquote(opts)
       :ok
     end
   end
