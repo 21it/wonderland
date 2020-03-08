@@ -5,6 +5,7 @@ defmodule Wonderland do
 
   defmacro __using__(opts) do
     quote location: :keep do
+      use Wonderland.Combinator
       use Wonderland.Data
       use Wonderland.TypeClass, unquote(opts)
       :ok

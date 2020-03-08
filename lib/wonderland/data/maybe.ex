@@ -2,11 +2,6 @@ defmodule Wonderland.Data.Maybe do
   use Calculus
   use Wonderland.TypeClass
 
-  @moduledoc """
-  Classic sum type `Maybe`
-  Implements Monad, Functor and Applicative behaviours
-  """
-
   defmacrop justp(x) do
     quote location: :keep do
       {:justp, unquote(x)}
