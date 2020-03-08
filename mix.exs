@@ -57,7 +57,8 @@ defmodule Wonderland.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:calculus, "~> 0.1"},
+      # {:calculus, "~> 0.1"},
+      {:calculus, github: "tkachuk-labs/calculus"},
       {:kare, "~> 1.0"},
       # development tools
       {:excoveralls, "~> 0.8", runtime: false},
