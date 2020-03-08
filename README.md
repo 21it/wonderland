@@ -1,5 +1,7 @@
 # Wonderland
 
+<img src="priv/img/logo.png" alt="logo"/>
+
 **TODO: Add description**
 
 ## Installation
