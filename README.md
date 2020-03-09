@@ -1,23 +1,56 @@
 # Wonderland
 
+Tons of boring `case`, `if` or `with` low level expressions and boilerplate pattern matching clauses with guards is not functional programming. Real functional programming is **fun** and operates with highly reusable polymorphic abstractions and compositions of them. Welcome to the Wonderland, Elixir functional programming foundation!
+
 <img src="priv/img/logo.png" alt="logo"/>
 
-**TODO: Add description**
+## Quick Start
+
+```elixir
+defmodule Demo do
+  use Wonderland
+
+  @spec parse(term) :: Either.t(String.t(), Date.t())
+  def parse(x) when is_binary(x) do
+    x
+    |> Date.from_iso8601()
+    |> lift(Either)
+    |> ex_first(&"#{x} is #{&1}")
+  end
+
+  def parse(x) do
+    Either.left("invalid date #{inspect(x)}")
+  end
+
+  @spec between?(
+          Date.t(),
+          Date.t(),
+          Date.t()
+        ) :: boolean()
+  def between?(x, y, z) do
+    Date.range(x, z)
+    |> Enum.member?(y)
+  end
+end
+```
+
+## Translation Table
+
+| Type Class  | Function  | Haskell |  Elixir  |
+|-------------|-----------|---------|----------|
+| Functor     | fmap      |   <$>   |   <~     |
+| Functor     | flip fmap |   <&>   |   ~>     |
+| Monad       | bind      |   >>=   |   >>>    |
+| Applicative | ap        |   <*>   |   <<~    |
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `wonderland` to your list of dependencies in `mix.exs`:
+The package can be installed by adding `wonderland` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:wonderland, "~> 0.1.0"}
+    {:wonderland, "~> 0.2"}
   ]
 end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/wonderland](https://hexdocs.pm/wonderland).
-
