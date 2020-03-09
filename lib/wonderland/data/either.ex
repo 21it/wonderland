@@ -51,6 +51,12 @@ defmodule Wonderland.Data.Either do
         leftp(x) -> calculus(return: {:error, x})
         rightp(x) -> calculus(return: {:ok, x})
       end
+
+    {:bifunctor_bimap, f, g} ->
+      case state do
+        leftp(x) -> calculus(return: f.(x) |> leftp |> construct)
+        rightp(x) -> calculus(return: g.(x) |> rightp |> construct)
+      end
   end
 
   @typep a :: term
@@ -143,4 +149,8 @@ defmodule Wonderland.Data.Either do
   def wonder_lift({:ok, x}), do: right(x)
   @impl true
   def wonder_unlift(x), do: eval(x, :wonder_unlift)
+
+  @behaviour Bifunctor
+  @impl true
+  def bifunctor_bimap(f, g, x), do: eval(x, {:bifunctor_bimap, f, g})
 end

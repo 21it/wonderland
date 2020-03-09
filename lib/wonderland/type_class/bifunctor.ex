@@ -38,4 +38,26 @@ defmodule Wonderland.TypeClass.Bifunctor do
       bimap(&Wonderland.Combinator.id/1, unquote(g), unquote(x))
     end
   end
+
+  #
+  # Elixir-friendly flipped versions
+  #
+
+  defmacro ex_bimap(x, f, g) do
+    quote location: :keep do
+      bimap(unquote(f), unquote(g), unquote(x))
+    end
+  end
+
+  defmacro ex_first(x, f) do
+    quote location: :keep do
+      first(unquote(f), unquote(x))
+    end
+  end
+
+  defmacro ex_second(x, f) do
+    quote location: :keep do
+      second(unquote(f), unquote(x))
+    end
+  end
 end
