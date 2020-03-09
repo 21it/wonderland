@@ -59,7 +59,7 @@ iex(10)> (&between?/3) <~ x <<~ z <<~ y |> unlift
 
 ## Boundary
 
-Wonders (Wonderland abstractions) are well encapsulated, and they can not leak or be corrupted by boring reality. Interaction with regular Elixir is always explicit: `lift/2` lifts Elixir expression into Wonderland, and `unlift/1` is acting opposite:
+Wonders (Wonderland abstractions) are well encapsulated, and they can not be corrupted by boring reality. Interaction with regular Elixir is always explicit: `lift/2` lifts Elixir expression into Wonderland, and `unlift/1` is acting opposite:
 
 ```elixir
 @spec lift(term, type) :: wonder
