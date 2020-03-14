@@ -3,6 +3,10 @@ defmodule Wonderland.Data.Either do
   use Wonderland.TypeClass
   use Wonderland.Combinator
 
+  @typep a :: term
+  @typep b :: term
+  @type t(a, b) :: __MODULE__.t(a, b)
+
   defmacrop leftp(x) do
     quote location: :keep do
       {:leftp, unquote(x)}
@@ -15,7 +19,10 @@ defmodule Wonderland.Data.Either do
     end
   end
 
-  defcalculus state, export_return: false, generate_opaque: false do
+  defcalculus state,
+    export_return: false,
+    generate_opaque: false,
+    generate_return: false do
     method when method in [:is_left?, :is_right?] ->
       case state do
         leftp(_) -> calculus(return: method == :is_left?)
@@ -58,10 +65,6 @@ defmodule Wonderland.Data.Either do
         rightp(x) -> calculus(return: g.(x) |> rightp |> construct)
       end
   end
-
-  @typep a :: term
-  @typep b :: term
-  @opaque t(a, b) :: t(a, b)
 
   @doc """
   First constructor

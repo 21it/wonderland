@@ -2,6 +2,9 @@ defmodule Wonderland.Data.Maybe do
   use Calculus
   use Wonderland.TypeClass
 
+  @typep a :: term
+  @type t(a) :: __MODULE__.t(a)
+
   defmacrop justp(x) do
     quote location: :keep do
       {:justp, unquote(x)}
@@ -10,7 +13,10 @@ defmodule Wonderland.Data.Maybe do
 
   defmacrop nothingp, do: :nothingp
 
-  defcalculus state, export_return: false, generate_opaque: false do
+  defcalculus state,
+    export_return: false,
+    generate_opaque: false,
+    generate_return: false do
     method when method in [:is_just?, :is_nothing?] ->
       case state do
         justp(_) -> calculus(return: method == :is_just?)
@@ -47,9 +53,6 @@ defmodule Wonderland.Data.Maybe do
         nothingp() -> calculus(return: nil)
       end
   end
-
-  @typep a :: term
-  @opaque t(a) :: t(a)
 
   @doc """
   First constructor

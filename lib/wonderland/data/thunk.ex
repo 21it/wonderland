@@ -2,6 +2,8 @@ defmodule Wonderland.Data.Thunk do
   use Calculus
   use Wonderland.TypeClass
 
+  @type t(a) :: __MODULE__.t(a)
+
   @moduledoc """
   Enables lazy evaluation
 
@@ -13,7 +15,10 @@ defmodule Wonderland.Data.Thunk do
   ** (RuntimeError) BANG
   """
 
-  defcalculus state, export_return: false, generate_opaque: false do
+  defcalculus state,
+    export_return: false,
+    generate_opaque: false,
+    generate_return: false do
     :wonder_unlift -> calculus(return: state.())
   end
 
