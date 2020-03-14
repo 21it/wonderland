@@ -3,6 +3,7 @@ defmodule WonderlandTest do
   use Wonderland
   doctest Wonderland
   doctest Wonderland.Combinator
+  doctest Wonderland.Data.Thunk
 
   defmodule Demo do
     use Wonderland

@@ -48,8 +48,8 @@ defmodule Wonderland.Data.Either do
 
     :wonder_unlift ->
       case state do
-        leftp(x) -> calculus(return: {:error, x})
-        rightp(x) -> calculus(return: {:ok, x})
+        leftp(x) -> calculus(return: {:error, unlift(x)})
+        rightp(x) -> calculus(return: {:ok, unlift(x)})
       end
 
     {:bifunctor_bimap, f, g} ->
@@ -147,6 +147,7 @@ defmodule Wonderland.Data.Either do
   def wonder_lift(x) when x in [:ok, true], do: right(x)
   def wonder_lift({:error, x}), do: left(x)
   def wonder_lift({:ok, x}), do: right(x)
+  def wonder_lift(x), do: right(x)
   @impl true
   def wonder_unlift(x), do: eval(x, :wonder_unlift)
 

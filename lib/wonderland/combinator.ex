@@ -5,6 +5,9 @@ defmodule Wonderland.Combinator do
     end
   end
 
+  require Wonderland.Data.Thunk, as: Thunk
+  require Wonderland.TypeClass.Wonder, as: Wonder
+
   @doc """
   ## Examples
 
@@ -26,11 +29,16 @@ defmodule Wonderland.Combinator do
   def const(x, _), do: x
   def const(x), do: &const(x, &1)
 
-  def absurd(_), do: raise("absurd has been applied")
-
-  defmacro absurd do
+  defmacro lazy(x) do
     quote location: :keep do
-      &absurd/1
+      unquote(Wonder).lift(unquote(x), unquote(Thunk))
+    end
+  end
+
+  def strict(x) do
+    case Thunk.is?(x) do
+      true -> x |> Thunk.wonder_unlift() |> strict()
+      false -> x
     end
   end
 

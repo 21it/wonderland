@@ -9,8 +9,30 @@ defmodule Wonderland.TypeClass.Wonder do
   @callback wonder_unlift(t()) :: a
 
   defmacro lift(x, mod) do
+    {m, []} = Code.eval_quoted(mod, [], __CALLER__)
+
+    try do
+      m.__info__(:functions)
+    rescue
+      _ -> :ok
+    end
+
+    _ = Code.ensure_loaded(m)
+    true = :erlang.function_exported(m, :wonder_lift, 1)
+
+    arg =
+      case m do
+        Wonderland.Data.Thunk ->
+          quote location: :keep do
+            fn -> unquote(x) end
+          end
+
+        _ ->
+          x
+      end
+
     quote location: :keep do
-      unquote(mod).wonder_lift(unquote(x))
+      unquote(mod).wonder_lift(unquote(arg))
     end
   end
 

@@ -13,38 +13,38 @@ defmodule Wonderland.Data.Maybe do
   defcalculus state, export_return: false, generate_opaque: false do
     method when method in [:is_just?, :is_nothing?] ->
       case state do
-        justp(_) -> calculus(state: state, return: method == :is_just?)
-        nothingp() -> calculus(state: state, return: method == :is_nothing?)
+        justp(_) -> calculus(return: method == :is_just?)
+        nothingp() -> calculus(return: method == :is_nothing?)
       end
 
     {:functor_fmap, f} ->
       case state do
-        justp(x) -> calculus(state: justp(f.(x)), return: :ok)
-        nothingp() -> calculus(state: state, return: :ok)
+        justp(x) -> calculus(return: just(f.(x)))
+        nothingp() -> calculus(return: nothing())
       end
 
     {:monad_bind, f} ->
       case state do
-        justp(x) -> calculus(state: state, return: f.(x))
-        nothingp() -> calculus(state: state, return: nothing())
+        justp(x) -> calculus(return: f.(x))
+        nothingp() -> calculus(return: nothing())
       end
 
     {:applicative_ap, mf} ->
       case is_just?(mf) do
         true ->
           case state do
-            justp(x) -> calculus(state: justp(unlift(mf).(x)), return: :ok)
-            nothingp() -> calculus(state: state, return: :ok)
+            justp(x) -> calculus(return: just(unlift(mf).(x)))
+            nothingp() -> calculus(return: nothing())
           end
 
         false ->
-          calculus(state: nothingp(), return: :ok)
+          calculus(return: nothing())
       end
 
     :wonder_unlift ->
       case state do
-        justp(x) -> calculus(state: state, return: x)
-        nothingp() -> calculus(state: state, return: nil)
+        justp(x) -> calculus(return: unlift(x))
+        nothingp() -> calculus(return: nil)
       end
   end
 
@@ -96,7 +96,7 @@ defmodule Wonderland.Data.Maybe do
   ```
   """
   @spec is_just?(t(a)) :: boolean
-  def is_just?(it), do: it |> eval(:is_just?) |> return()
+  def is_just?(x), do: eval(x, :is_just?)
 
   @doc """
   If argument is `nothing()` then returns `true`
@@ -115,24 +115,24 @@ defmodule Wonderland.Data.Maybe do
   ```
   """
   @spec is_nothing?(t(a)) :: boolean
-  def is_nothing?(it), do: it |> eval(:is_nothing?) |> return()
+  def is_nothing?(x), do: eval(x, :is_nothing?)
 
   @behaviour Functor
   @impl true
-  def functor_fmap(f, it), do: it |> eval({:functor_fmap, f})
+  def functor_fmap(f, x), do: eval(x, {:functor_fmap, f})
 
   @behaviour Monad
   @impl true
-  def monad_bind(it, f), do: it |> eval({:monad_bind, f}) |> return()
+  def monad_bind(x, f), do: eval(x, {:monad_bind, f})
 
   @behaviour Applicative
   @impl true
-  def applicative_ap(mf, it), do: it |> eval({:applicative_ap, mf})
+  def applicative_ap(mf, x), do: eval(x, {:applicative_ap, mf})
 
   @behaviour Wonder
   @impl true
   def wonder_lift(x) when x in [nil, :undefined], do: nothing()
   def wonder_lift(x), do: just(x)
   @impl true
-  def wonder_unlift(x), do: x |> eval(:wonder_unlift) |> return()
+  def wonder_unlift(x), do: eval(x, :wonder_unlift)
 end
