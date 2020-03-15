@@ -3,38 +3,69 @@ defmodule WonderlandPropTest do
   use Wonderland
   use PropCheck
 
+  @numtests 100
+
+  #
+  # utils
+  #
+
   defmacro lhs <~> rhs do
     quote location: :keep do
       unlift(unquote(lhs)) == unlift(unquote(rhs))
     end
   end
 
+  defp type_of(x) do
+    {:module, mod} = :erlang.fun_info(x, :module)
+    mod
+  end
+
+  defp dynamic_lift(x, m) do
+    case m do
+      Maybe -> lift(x, Maybe)
+      Either -> lift(x, Either)
+      Thunk -> lift(x, Thunk)
+    end
+  end
+
+  #
+  # generators
+  #
+
   defp everything do
     weighted_union([
-      {5, any()},
+      {10, any()},
       {1, exactly(nil)}
     ])
   end
 
   defp functor do
     let [x <- everything(), m <- oneof([Maybe, Either])] do
-      case m do
-        Maybe -> lift(x, Maybe)
-        Either -> lift(x, Either)
-      end
+      dynamic_lift(x, m)
     end
   end
 
-  describe "Functor" do
-    property "first law" do
+  defp monad do
+    let [x <- everything(), m <- oneof([Maybe, Either])] do
+      dynamic_lift(x, m)
+    end
+  end
+
+  #
+  # properties
+  #
+
+  describe "Functor laws" do
+    property "identity" do
       quickcheck(
         forall x <- functor() do
           x <~> fmap(&id/1, x)
-        end
+        end,
+        numtests: @numtests
       )
     end
 
-    property "second law" do
+    property "composition" do
       fmap0 = curry(fn f, x -> fmap(f, x) end)
 
       quickcheck(
@@ -47,7 +78,35 @@ defmodule WonderlandPropTest do
           rhs = compose(fmap0.(g), fmap0.(f)).(x)
           lhs <~> rhs
         end,
-        numtests: 1000
+        numtests: @numtests
+      )
+    end
+  end
+
+  describe "Monad laws" do
+    property "left identity" do
+      quickcheck(
+        forall [
+          x <- any(),
+          f <- function([any()], monad())
+        ] do
+          rhs = f.(x)
+          lhs = dynamic_lift(x, type_of(rhs)) >>> f
+          lhs <~> rhs
+        end,
+        numtests: @numtests
+      )
+    end
+
+    property "right identity" do
+      quickcheck(
+        forall [
+          m <- monad()
+        ] do
+          lhs = m >>> (&dynamic_lift(&1, type_of(m)))
+          lhs <~> m
+        end,
+        numtests: @numtests
       )
     end
   end
