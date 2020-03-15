@@ -55,8 +55,8 @@ defmodule Wonderland.Data.Either do
 
     :wonder_unlift ->
       case state do
-        leftp(x) -> calculus(return: {:error, unlift(x)})
-        rightp(x) -> calculus(return: {:ok, unlift(x)})
+        leftp(x) -> calculus(return: {:error, x})
+        rightp(x) -> calculus(return: {:ok, x})
       end
 
     {:bifunctor_bimap, f, g} ->

@@ -8,6 +8,7 @@ defmodule Wonderland do
       use Wonderland.Combinator
       use Wonderland.Data
       use Wonderland.TypeClass, unquote(opts)
+      import Kare, only: [curry: 1]
       :ok
     end
   end

@@ -42,6 +42,10 @@ defmodule Wonderland.Combinator do
     end
   end
 
+  def compose(g, f) do
+    &g.(f.(&1))
+  end
+
   defmacro void do
     quote location: :keep do
       fn -> raise "void has been applied" end

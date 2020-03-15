@@ -59,6 +59,8 @@ defmodule Wonderland.MixProject do
     [
       {:calculus, "~> 0.3"},
       {:kare, "~> 1.0"},
+      # test tools
+      {:propcheck, "~> 1.2", only: :test},
       # development tools
       {:excoveralls, "~> 0.8", runtime: false},
       {:dialyxir, "~> 0.5", runtime: false},

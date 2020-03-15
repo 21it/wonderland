@@ -49,7 +49,7 @@ defmodule Wonderland.Data.Maybe do
 
     :wonder_unlift ->
       case state do
-        justp(x) -> calculus(return: unlift(x))
+        justp(x) -> calculus(return: x)
         nothingp() -> calculus(return: nil)
       end
   end
