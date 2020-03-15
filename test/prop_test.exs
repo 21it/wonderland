@@ -5,6 +5,9 @@ defmodule WonderlandPropTest do
 
   @numtests 100
 
+  @monads [Maybe, Either]
+  @functors [Maybe, Either]
+
   #
   # utils
   #
@@ -40,14 +43,19 @@ defmodule WonderlandPropTest do
   end
 
   defp functor do
-    let [x <- everything(), m <- oneof([Maybe, Either])] do
+    let [x <- everything(), m <- oneof(@functors)] do
       dynamic_lift(x, m)
     end
   end
 
-  defp monad do
-    let [x <- everything(), m <- oneof([Maybe, Either])] do
-      dynamic_lift(x, m)
+  defp monad, do: monad(Maybe.nothing())
+
+  defp monad(t) do
+    let [x <- everything(), m <- oneof(@monads)] do
+      case Maybe.is_just?(t) do
+        true -> dynamic_lift(x, unlift(t))
+        false -> dynamic_lift(x, m)
+      end
     end
   end
 
@@ -104,7 +112,28 @@ defmodule WonderlandPropTest do
           m <- monad()
         ] do
           lhs = m >>> (&dynamic_lift(&1, type_of(m)))
-          lhs <~> m
+          rhs = m
+          lhs <~> rhs
+        end,
+        numtests: @numtests
+      )
+    end
+
+    property "associativity" do
+      quickcheck(
+        forall [
+          m <- monad()
+        ] do
+          t = type_of(m) |> Maybe.just()
+
+          forall [
+            f <- function([any()], monad(t)),
+            g <- function([any()], monad(t))
+          ] do
+            lhs = m >>> f >>> g
+            rhs = m >>> (&(f.(&1) >>> g))
+            lhs <~> rhs
+          end
         end,
         numtests: @numtests
       )
