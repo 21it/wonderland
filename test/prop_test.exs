@@ -7,6 +7,7 @@ defmodule WonderlandPropTest do
 
   @monads [Maybe, Either]
   @functors [Maybe, Either]
+  @applicatives [Maybe]
 
   #
   # utils
@@ -31,6 +32,12 @@ defmodule WonderlandPropTest do
     end
   end
 
+  defmacro mk_pure(t) do
+    quote location: :keep do
+      pure = fn x -> dynamic_lift(x, unquote(t)) end
+    end
+  end
+
   #
   # generators
   #
@@ -43,8 +50,8 @@ defmodule WonderlandPropTest do
   end
 
   defp functor do
-    let [x <- everything(), m <- oneof(@functors)] do
-      dynamic_lift(x, m)
+    let [x <- everything(), t <- oneof(@functors)] do
+      dynamic_lift(x, t)
     end
   end
 
@@ -55,6 +62,17 @@ defmodule WonderlandPropTest do
       case Maybe.is_just?(t) do
         true -> dynamic_lift(x, unlift(t))
         false -> dynamic_lift(x, m)
+      end
+    end
+  end
+
+  defp applicative, do: applicative(Maybe.nothing())
+
+  defp applicative(mt) do
+    let [x <- everything(), t <- oneof(@applicatives)] do
+      case Maybe.is_just?(mt) do
+        true -> dynamic_lift(x, unlift(mt))
+        false -> dynamic_lift(x, t)
       end
     end
   end
@@ -122,18 +140,87 @@ defmodule WonderlandPropTest do
     property "associativity" do
       quickcheck(
         forall [
-          m <- monad()
+          x <- monad()
         ] do
-          t = type_of(m) |> Maybe.just()
+          t = type_of(x) |> Maybe.just()
 
           forall [
             f <- function([any()], monad(t)),
             g <- function([any()], monad(t))
           ] do
-            lhs = m >>> f >>> g
-            rhs = m >>> (&(f.(&1) >>> g))
+            lhs = x >>> f >>> g
+            rhs = x >>> (&(f.(&1) >>> g))
             lhs <~> rhs
           end
+        end,
+        numtests: @numtests
+      )
+    end
+  end
+
+  describe "Applicative laws" do
+    property "identity" do
+      quickcheck(
+        forall [
+          x <- applicative()
+        ] do
+          pure = type_of(x) |> mk_pure()
+          lhs = pure.(&id/1) <<~ x
+          rhs = x
+          lhs <~> rhs
+        end,
+        numtests: @numtests
+      )
+    end
+
+    property "homomorphism" do
+      quickcheck(
+        forall [
+          t <- oneof(@applicatives),
+          x <- any(),
+          f <- function([any()], any())
+        ] do
+          pure = mk_pure(t)
+          lhs = pure.(f) <<~ pure.(x)
+          rhs = pure.(f.(x))
+          lhs <~> rhs
+        end,
+        numtests: @numtests
+      )
+    end
+
+    property "interchange" do
+      quickcheck(
+        forall [
+          t <- oneof(@applicatives),
+          x <- any(),
+          f0 <- function([any()], any())
+        ] do
+          pure = mk_pure(t)
+          f = pure.(f0)
+          lhs = f <<~ pure.(x)
+          rhs = pure.(& &1.(x)) <<~ f
+          lhs <~> rhs
+        end,
+        numtests: @numtests
+      )
+    end
+
+    property "composition" do
+      quickcheck(
+        forall [
+          t <- oneof(@applicatives),
+          x0 <- any(),
+          f0 <- function([any()], any()),
+          g0 <- function([any()], any())
+        ] do
+          pure = mk_pure(t)
+          x = pure.(x0)
+          f = pure.(f0)
+          g = pure.(g0)
+          lhs = pure.(&compose/2) <<~ f <<~ g <<~ x
+          rhs = f <<~ (g <<~ x)
+          lhs <~> rhs
         end,
         numtests: @numtests
       )
