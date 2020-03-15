@@ -7,7 +7,7 @@ defmodule WonderlandPropTest do
 
   @monads [Maybe, Either]
   @functors [Maybe, Either]
-  @applicatives [Maybe]
+  @applicatives [Maybe, Either]
 
   #
   # utils
