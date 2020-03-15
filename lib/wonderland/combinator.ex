@@ -29,12 +29,29 @@ defmodule Wonderland.Combinator do
   def const(x, _), do: x
   def const(x), do: &const(x, &1)
 
+  @doc """
+  Creates Thunk from expression
+
+  iex> x = "BOOM" |> raise |> lazy
+  iex> Thunk.is?(x)
+  true
+  """
   defmacro lazy(x) do
     quote location: :keep do
       unquote(Wonder).lift(unquote(x), unquote(Thunk))
     end
   end
 
+  @doc """
+  Recursively evaluates Thunk
+
+  iex> x = 2 * 2 |> lazy
+  iex> y = "BOOM" |> raise |> lazy
+  iex> strict(x)
+  4
+  iex> strict(y)
+  ** (RuntimeError) BOOM
+  """
   def strict(x) do
     case Thunk.is?(x) do
       true -> x |> Thunk.wonder_unlift() |> strict()

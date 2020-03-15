@@ -19,22 +19,15 @@ defmodule WonderlandPropTest do
     end
   end
 
-  defp type_of(x) do
-    {:module, mod} = :erlang.fun_info(x, :module)
-    mod
-  end
-
-  defp dynamic_lift(x, m) do
-    case m do
-      Maybe -> lift(x, Maybe)
-      Either -> lift(x, Either)
-      Thunk -> lift(x, Thunk)
-    end
-  end
-
   defmacro mk_pure(t) do
     quote location: :keep do
-      pure = fn x -> dynamic_lift(x, unquote(t)) end
+      fn x ->
+        case unquote(t) do
+          Maybe -> lift(x, Maybe)
+          Either -> lift(x, Either)
+          Thunk -> lift(x, Thunk)
+        end
+      end
     end
   end
 
@@ -42,38 +35,35 @@ defmodule WonderlandPropTest do
   # generators
   #
 
+  defp special_tuple do
+    let [t <- oneof([:ok, :error]), x <- any()] do
+      {t, x}
+    end
+  end
+
   defp everything do
     weighted_union([
-      {10, any()},
-      {1, exactly(nil)}
+      {8, any()},
+      {1, oneof([nil, :undefined, true, false, :ok, :error])},
+      {1, special_tuple()}
     ])
   end
 
   defp functor do
     let [x <- everything(), t <- oneof(@functors)] do
-      dynamic_lift(x, t)
+      mk_pure(t).(x)
     end
   end
-
-  defp monad, do: monad(Maybe.nothing())
 
   defp monad(t) do
-    let [x <- everything(), m <- oneof(@monads)] do
-      case Maybe.is_just?(t) do
-        true -> dynamic_lift(x, unlift(t))
-        false -> dynamic_lift(x, m)
-      end
+    let x <- everything() do
+      mk_pure(t).(x)
     end
   end
 
-  defp applicative, do: applicative(Maybe.nothing())
-
-  defp applicative(mt) do
-    let [x <- everything(), t <- oneof(@applicatives)] do
-      case Maybe.is_just?(mt) do
-        true -> dynamic_lift(x, unlift(mt))
-        false -> dynamic_lift(x, t)
-      end
+  defp applicative(t) do
+    let x <- everything() do
+      mk_pure(t).(x)
     end
   end
 
@@ -112,13 +102,17 @@ defmodule WonderlandPropTest do
   describe "Monad laws" do
     property "left identity" do
       quickcheck(
-        forall [
-          x <- any(),
-          f <- function([any()], monad())
-        ] do
-          rhs = f.(x)
-          lhs = dynamic_lift(x, type_of(rhs)) >>> f
-          lhs <~> rhs
+        forall t <- oneof(@monads) do
+          pure = mk_pure(t)
+
+          forall [
+            x <- any(),
+            f <- function([any()], monad(t))
+          ] do
+            lhs = pure.(x) >>> f
+            rhs = f.(x)
+            lhs <~> rhs
+          end
         end,
         numtests: @numtests
       )
@@ -126,12 +120,14 @@ defmodule WonderlandPropTest do
 
     property "right identity" do
       quickcheck(
-        forall [
-          m <- monad()
-        ] do
-          lhs = m >>> (&dynamic_lift(&1, type_of(m)))
-          rhs = m
-          lhs <~> rhs
+        forall t <- oneof(@monads) do
+          pure = mk_pure(t)
+
+          forall x <- monad(t) do
+            lhs = x >>> pure
+            rhs = x
+            lhs <~> rhs
+          end
         end,
         numtests: @numtests
       )
@@ -139,12 +135,9 @@ defmodule WonderlandPropTest do
 
     property "associativity" do
       quickcheck(
-        forall [
-          x <- monad()
-        ] do
-          t = type_of(x) |> Maybe.just()
-
+        forall t <- oneof(@monads) do
           forall [
+            x <- monad(t),
             f <- function([any()], monad(t)),
             g <- function([any()], monad(t))
           ] do
@@ -161,13 +154,14 @@ defmodule WonderlandPropTest do
   describe "Applicative laws" do
     property "identity" do
       quickcheck(
-        forall [
-          x <- applicative()
-        ] do
-          pure = type_of(x) |> mk_pure()
-          lhs = pure.(&id/1) <<~ x
-          rhs = x
-          lhs <~> rhs
+        forall t <- oneof(@applicatives) do
+          pure = mk_pure(t)
+
+          forall x <- applicative(t) do
+            lhs = pure.(&id/1) <<~ x
+            rhs = x
+            lhs <~> rhs
+          end
         end,
         numtests: @numtests
       )
