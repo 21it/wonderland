@@ -3,6 +3,15 @@ defmodule Wonderland.Data.Either do
   use Wonderland.TypeClass
   use Wonderland.Combinator
 
+  @moduledoc """
+  Classic sum type which represents 2 alternatives
+
+  - Bifunctor
+  - Functor (as right)
+  - Monad (as right)
+  - Applicative (as right)
+  """
+
   @typep a :: term
   @typep b :: term
   @type t(a, b) :: __MODULE__.t(a, b)

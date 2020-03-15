@@ -1,4 +1,8 @@
 defmodule Wonderland.Combinator do
+  @moduledoc """
+  Basic functional programming combinators
+  """
+
   defmacro __using__(_) do
     quote location: :keep do
       import unquote(__MODULE__)
@@ -9,15 +13,20 @@ defmodule Wonderland.Combinator do
   require Wonderland.TypeClass.Wonder, as: Wonder
 
   @doc """
+  Identity function
+
   ## Examples
 
   ```
-  iex> id(1)
-  1
+  iex> id(:hello)
+  :hello
+  ```
   """
   def id(x), do: x
 
   @doc """
+  Constant function, ignores 2nd argument
+
   ## Examples
 
   ```
@@ -25,6 +34,7 @@ defmodule Wonderland.Combinator do
   :foo
   iex> const(:foo).(:bar)
   :foo
+  ```
   """
   def const(x, _), do: x
   def const(x), do: &const(x, &1)
@@ -32,9 +42,13 @@ defmodule Wonderland.Combinator do
   @doc """
   Creates Thunk from expression
 
+  ## Examples
+
+  ```
   iex> x = "BOOM" |> raise |> lazy
   iex> Thunk.is?(x)
   true
+  ```
   """
   defmacro lazy(x) do
     quote location: :keep do
@@ -45,12 +59,16 @@ defmodule Wonderland.Combinator do
   @doc """
   Recursively evaluates Thunk
 
+  Examples
+
+  ```
   iex> x = 2 * 2 |> lazy
   iex> y = "BOOM" |> raise |> lazy
   iex> strict(x)
   4
   iex> strict(y)
   ** (RuntimeError) BOOM
+  ```
   """
   def strict(x) do
     case Thunk.is?(x) do
@@ -59,6 +77,17 @@ defmodule Wonderland.Combinator do
     end
   end
 
+  @doc """
+  Classic composition function
+
+  ## Examples
+
+  ```
+  iex> x = compose(&(&1+1), &(&1*2))
+  iex> x.(42)
+  85
+  ```
+  """
   def compose(g, f) do
     &g.(f.(&1))
   end

@@ -5,7 +5,7 @@ defmodule Wonderland.TypeClass.Wonder do
   @typep a :: term
   @type t() :: __MODULE__.t()
 
-  @callback wonder_lift(a) :: t() | no_return()
+  @callback wonder_lift(a) :: t()
   @callback wonder_unlift(t()) :: a
 
   defmacro lift(x, mod) do

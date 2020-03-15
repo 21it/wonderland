@@ -55,9 +55,9 @@ defmodule Wonderland.TypeClass.Bifunctor do
     end
   end
 
-  defmacro ex_second(x, f) do
+  defmacro ex_second(x, g) do
     quote location: :keep do
-      second(unquote(f), unquote(x))
+      second(unquote(g), unquote(x))
     end
   end
 end

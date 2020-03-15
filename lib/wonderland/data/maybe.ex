@@ -2,6 +2,14 @@ defmodule Wonderland.Data.Maybe do
   use Calculus
   use Wonderland.TypeClass
 
+  @moduledoc """
+  Classic sum type which represents optional value
+
+  - Functor
+  - Monad
+  - Applicative
+  """
+
   @typep a :: term
   @type t(a) :: __MODULE__.t(a)
 

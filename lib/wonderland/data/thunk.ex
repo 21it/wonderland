@@ -9,10 +9,11 @@ defmodule Wonderland.Data.Thunk do
 
   ## Examples
 
-  iex> use Wonderland
+  ```
   iex> x = "BANG" |> raise() |> lift(Thunk)
   iex> unlift(x)
   ** (RuntimeError) BANG
+  ```
   """
 
   defcalculus state,
