@@ -48,8 +48,23 @@ defmodule Wonderland.Combinator do
   iex> x = "BOOM" |> raise |> lazy
   iex> Thunk.is?(x)
   true
+
+  iex> x = lazy do
+  ...>   (2 * 6)
+  ...>   |> div(3)
+  ...> end
+  iex> Thunk.is?(x)
+  true
+  iex> strict(x)
+  4
   ```
   """
+  defmacro lazy(do: x) do
+    quote location: :keep do
+      unquote(__MODULE__).lazy(unquote(x))
+    end
+  end
+
   defmacro lazy(x) do
     quote location: :keep do
       unquote(Wonder).lift(unquote(x), unquote(Thunk))
