@@ -82,7 +82,7 @@ The package can be installed by adding `wonderland` to your list of dependencies
 ```elixir
 def deps do
   [
-    {:wonderland, "~> 0.2"}
+    {:wonderland, "~> 0.1"}
   ]
 end
 ```
