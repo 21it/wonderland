@@ -60,13 +60,13 @@ defmodule Wonderland.MixProject do
       {:calculus, "~> 0.3"},
       {:kare, "~> 1.0"},
       # test tools
-      {:propcheck, "~> 1.2", only: :test},
+      {:propcheck, "~> 1.2", only: [:dev, :test]},
       # development tools
-      {:excoveralls, "~> 0.8", runtime: false},
-      {:dialyxir, "~> 0.5", runtime: false},
-      {:ex_doc, "~> 0.19", runtime: false},
-      {:credo, "~> 0.9", runtime: false},
-      {:boilex, "~> 0.2", runtime: false}
+      {:excoveralls, "~> 0.8", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.19", only: [:dev, :test], runtime: false},
+      {:credo, "~> 0.9", only: [:dev, :test], runtime: false},
+      {:boilex, "~> 0.2", only: [:dev, :test], runtime: false}
     ]
   end
 
